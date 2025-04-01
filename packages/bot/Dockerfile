@@ -31,7 +31,8 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY packages/bot ./packages/bot
 COPY packages/shared ./packages/shared
-RUN npm run --prefix packages/bot build
+RUN npm run --prefix packages/shared build && \
+    npm run --prefix packages/bot build
 
 # Stage 3: Production
 FROM node:18-alpine as production

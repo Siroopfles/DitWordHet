@@ -30,7 +30,8 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY packages/web ./packages/web
 COPY packages/shared ./packages/shared
-RUN npm run --prefix packages/web build
+RUN npm run --prefix packages/shared build && \
+    npm run --prefix packages/web build
 
 
 # Stage 3: Production
