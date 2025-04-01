@@ -28,6 +28,7 @@ COPY packages/shared/package*.json ./packages/shared/
 RUN npm ci
 
 # Kopieer en build source code
+COPY tsconfig.json ./
 COPY packages/api ./packages/api
 COPY packages/shared ./packages/shared
 RUN npm run --prefix packages/api build

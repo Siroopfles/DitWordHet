@@ -26,11 +26,12 @@ COPY package*.json ./
 COPY packages/web/package*.json ./packages/web/
 COPY packages/shared/package*.json ./packages/shared/
 RUN npm ci
-
 # Kopieer en build source code
+COPY tsconfig.json ./
 COPY packages/web ./packages/web
 COPY packages/shared ./packages/shared
 RUN npm run --prefix packages/web build
+
 
 # Stage 3: Production
 FROM nginx:alpine as production
