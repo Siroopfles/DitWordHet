@@ -18,9 +18,6 @@
       "@ditwordhet/*": ["packages/*/src"]
     }
   },
-  "references": [
-    { "path": "packages/shared" },
-    { "path": "packages/bot" }
-  ],
+  "references": [{ "path": "packages/shared" }, { "path": "packages/bot" }],
   "exclude": ["node_modules"]
 }

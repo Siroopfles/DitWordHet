@@ -5,7 +5,7 @@ import prettierConfig from 'eslint-config-prettier';
 export default [
   // Basis JavaScript configuratie (zonder TypeScript parser)
   {
-    files: ["**/*.js", "**/*.mjs"],
+    files: ['**/*.js', '**/*.mjs'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -20,14 +20,14 @@ export default [
       'no-unused-vars': 'warn'
     }
   },
-  
+
   // TypeScript configuratie met project optie
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: './tsconfig.json'
       },
       globals: {
         console: true,
@@ -46,10 +46,10 @@ export default [
       'no-unused-vars': 'warn'
     }
   },
-  
+
   // Test bestanden configuratie
   {
-    files: ["**/*.test.ts", "**/*.spec.ts"],
+    files: ['**/*.test.ts', '**/*.spec.ts'],
     languageOptions: {
       globals: {
         describe: true,
@@ -59,10 +59,10 @@ export default [
       }
     }
   },
-  
+
   // Prettier configuratie
   prettierConfig,
-  
+
   // Bestanden die genegeerd moeten worden
   {
     ignores: ['dist/**', 'coverage/**', 'node_modules/**']
