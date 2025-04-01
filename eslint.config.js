@@ -1,9 +1,10 @@
-import { defineConfig } from "eslint/config";
+import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
 
-export default defineConfig([
+export default [
+  js.configs.recommended,
   {
     files: ["**/*.js", "**/*.ts", "**/*.mjs"],
     languageOptions: {
@@ -43,4 +44,4 @@ export default defineConfig([
   {
     ignores: ['dist/**', 'coverage/**', 'node_modules/**']
   }
-]);
+];
