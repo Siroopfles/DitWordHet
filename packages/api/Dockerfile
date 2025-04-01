@@ -49,6 +49,10 @@ COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 # Set production environment
 ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose API port
+EXPOSE 3000
 
 # Start production server
 CMD ["node", "packages/api/dist/index.js"]
