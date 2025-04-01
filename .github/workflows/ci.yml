@@ -119,8 +119,16 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
-      - name: List images
-        run: docker images
+      - name: Save image
+        run: |
+          docker save ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }} > /tmp/image.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ matrix.package }}
+          path: /tmp/image.tar
+          retention-days: 1
 
       - name: Move cache
         run: |
@@ -135,19 +143,15 @@ jobs:
       matrix:
         package: [api, web, bot]
     steps:
-      - name: Wait for images to be available
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ matrix.package }}
+          path: /tmp
+
+      - name: Load image
         run: |
-          # Wacht tot de images beschikbaar zijn
-          for i in {1..30}; do
-            if docker images | grep ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}; then
-              echo "Image found"
-              exit 0
-            fi
-            echo "Waiting for image... ($i/30)"
-            sleep 2
-          done
-          echo "Image not found after timeout"
-          exit 1
+          docker load < /tmp/image.tar
 
       - name: Verify image
         run: docker images
