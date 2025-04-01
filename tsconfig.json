@@ -9,12 +9,18 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["packages/*"]
+      "@ditwordhet/*": ["packages/*/src"]
     }
   },
-  "include": ["packages/**/*.ts", "packages/**/*.tsx"],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/bot" }
+  ],
   "exclude": ["node_modules"]
 }
