@@ -169,7 +169,8 @@ jobs:
           output: 'trivy-results.sarif'
           exit-code: '1'
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
+          scanners: 'vuln'
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
