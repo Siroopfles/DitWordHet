@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "lint": "node ./node_modules/eslint/bin/eslint.js .",
+    "lint": "npx --no-install eslint .",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "type-check": "tsc --noEmit",

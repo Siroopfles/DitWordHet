@@ -1,45 +1,46 @@
-import js from '@eslint/js';
+import { defineConfig } from "eslint/config";
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
 
-export default [
-  js.configs.recommended,
+export default defineConfig([
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ["**/*.js", "**/*.ts", "**/*.mjs"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         project: './tsconfig.json',
       },
       globals: {
-        console: 'readonly',
-        module: 'readonly',
-        process: 'readonly'
+        console: true,
+        module: true,
+        process: true
       }
     },
     plugins: {
-      '@typescript-eslint': tsPlugin,
+      '@typescript-eslint': tsPlugin
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-    },
+      'prefer-const': 'warn',
+      'no-unused-vars': 'warn'
+    }
   },
   {
-    files: ['**/*.test.ts', '**/*.spec.ts'],
+    files: ["**/*.test.ts", "**/*.spec.ts"],
     languageOptions: {
       globals: {
-        describe: 'readonly',
-        expect: 'readonly',
-        it: 'readonly',
-        jest: 'readonly'
+        describe: true,
+        expect: true,
+        it: true,
+        jest: true
       }
     }
   },
   prettierConfig,
   {
-    ignores: ['dist/**', 'coverage/**', 'node_modules/**'],
-  },
-];
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**']
+  }
+]);
