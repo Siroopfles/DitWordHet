@@ -139,10 +139,15 @@ jobs:
     name: Security Scan
     needs: [build, set-env]
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     strategy:
       matrix:
         package: [api, web, bot]
     steps:
+      - uses: actions/checkout@v4
       - name: Download image artifact
         uses: actions/download-artifact@v4
         with:
