@@ -25,8 +25,6 @@ jobs:
         run: |
           echo "repo_owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-
-jobs:
   validate:
     needs: set-env
     name: Validate Code
@@ -88,9 +86,8 @@ jobs:
           path: coverage/
 
   build:
-    needs: [test, set-env]
     name: Build Containers
-    needs: test
+    needs: [test, set-env]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -125,9 +122,8 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   scan:
-    needs: [build, set-env]
     name: Security Scan
-    needs: build
+    needs: [build, set-env]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -158,9 +154,8 @@ jobs:
           args: --severity-threshold=high
 
   publish:
-    needs: [scan, set-env]
     name: Publish Images
-    needs: scan
+    needs: [scan, set-env]
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
@@ -171,6 +166,8 @@ jobs:
       matrix:
         package: [api, web, bot]
     steps:
+      - uses: actions/checkout@v4
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
