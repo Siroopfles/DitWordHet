@@ -199,7 +199,7 @@ jobs:
   publish:
     name: Publish Images
     needs: [scan, set-env]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/test/'))
     runs-on: ubuntu-latest
     permissions:
       packages: write
