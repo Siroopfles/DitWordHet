@@ -13,10 +13,7 @@ RUN npm install
 COPY packages/web ./packages/web
 COPY packages/shared ./packages/shared
 
-# Expose Vite dev server port
-EXPOSE 3001
-
-# Start Vite dev server met HMR
+# Start development server met hot-reloading
 CMD ["npm", "run", "--prefix", "packages/web", "dev"]
 
 # Stage 2: Builder
@@ -44,8 +41,8 @@ COPY packages/web/nginx.conf /etc/nginx/conf.d/default.conf
 # Kopieer gecompileerde frontend van builder
 COPY --from=builder /app/packages/web/dist /usr/share/nginx/html
 
-# Expose HTTP port
-EXPOSE 80
+# Set production environment
+ENV NODE_ENV=production
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
