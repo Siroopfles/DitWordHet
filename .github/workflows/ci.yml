@@ -40,9 +40,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@ditwordhet'
 
-      - name: Install dependencies
+      - name: Clean install dependencies
         run: |
-          npm ci --workspaces --if-present
+          rm -rf node_modules
+          npm ci
 
       - name: Run linting
         run: |
@@ -71,9 +72,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@ditwordhet'
 
-      - name: Install dependencies
+      - name: Clean install dependencies
         run: |
-          npm ci --workspaces --if-present
+          rm -rf node_modules
+          npm ci
 
       - name: Run tests
         run: |
