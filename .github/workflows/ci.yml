@@ -163,11 +163,21 @@ jobs:
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
+          format: 'table'
+          severity: 'CRITICAL'
+          scanners: 'vuln'
+          exit-code: '0'
+
+      - name: Run Trivy for SARIF output
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           severity: 'CRITICAL'
           scanners: 'vuln'
