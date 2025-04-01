@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "build": "npm run build -w @ditwordhet/shared && npm run build -w @ditwordhet/bot",
+    "build": "npm run build -w @ditwordhet/shared && npm run build -w @ditwordhet/bot && npm run build -w @ditwordhet/web",
     "type-check": "npm run build && tsc --noEmit",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:ci": "NODE_OPTIONS=--experimental-vm-modules jest --ci --coverage"
