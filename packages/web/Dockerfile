@@ -1,5 +1,5 @@
 # Stage 1: Development
-FROM node:18-alpine as development
+FROM node:18-slim as development
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY packages/shared ./packages/shared
 CMD ["npm", "run", "--prefix", "packages/web", "dev"]
 
 # Stage 2: Builder
-FROM node:18-alpine as builder
+FROM node:18-slim as builder
 
 WORKDIR /app
 
