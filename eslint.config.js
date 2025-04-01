@@ -3,11 +3,28 @@ import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
 
 export default [
+  // Basis JavaScript configuratie (zonder TypeScript parser)
   {
-    files: ["**/*.js", "**/*.ts", "**/*.mjs"],
+    files: ["**/*.js", "**/*.mjs"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
+      globals: {
+        console: true,
+        module: true,
+        process: true
+      }
+    },
+    rules: {
+      'prefer-const': 'warn',
+      'no-unused-vars': 'warn'
+    }
+  },
+  
+  // TypeScript configuratie met project optie
+  {
+    files: ["**/*.ts"],
+    languageOptions: {
       parser: tsParser,
       parserOptions: {
         project: './tsconfig.json',
@@ -29,6 +46,8 @@ export default [
       'no-unused-vars': 'warn'
     }
   },
+  
+  // Test bestanden configuratie
   {
     files: ["**/*.test.ts", "**/*.spec.ts"],
     languageOptions: {
@@ -40,7 +59,11 @@ export default [
       }
     }
   },
+  
+  // Prettier configuratie
   prettierConfig,
+  
+  // Bestanden die genegeerd moeten worden
   {
     ignores: ['dist/**', 'coverage/**', 'node_modules/**']
   }
