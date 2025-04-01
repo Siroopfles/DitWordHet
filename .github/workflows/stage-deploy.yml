@@ -21,15 +21,15 @@ jobs:
   deploy:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    concurrency: 
+    concurrency:
       group: staging_environment
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
-        
+
       - name: Deploy to staging
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_STAGE }}
@@ -37,12 +37,12 @@ jobs:
           echo "$KUBE_CONFIG_DATA" | base64 -d > kubeconfig.yaml
           chmod 600 kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
-          
+
           # Update image tags in manifests
           for app in api web bot; do
             kubectl set image deployment/$app $app=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$app:${{ github.event.inputs.version }} -n staging
           done
-          
+
           # Wait for rollout
           for app in api web bot; do
             kubectl rollout status deployment/$app -n staging --timeout=300s
@@ -54,24 +54,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Install Playwright
         run: npx playwright install --with-deps
-        
+
       - name: Run E2E tests
         env:
           TEST_URL: https://stage.ditwordhet.nl
         run: npm run test:e2e
-        
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -85,20 +85,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup k6
         run: |
           sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
           echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
           sudo apt-get install k6
-          
+
       - name: Run load tests
         run: |
           k6 run ./tests/performance/load-test.js \
             --env API_URL=https://stage-api.ditwordhet.nl \
             --out json=test-results.json
-            
+
       - name: Check performance thresholds
         run: |
           if ! jq -e '.metrics.http_req_duration.avg < 500' test-results.json; then
@@ -130,12 +130,12 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          title: "Staging Deployment"
+          title: 'Staging Deployment'
           description: |
             Environment: Staging
             Version: ${{ github.event.inputs.version }}
             Status: ${{ job.status }}
-            
+
       - name: Create Pull Request Comment
         if: failure()
         uses: actions/github-script@v7

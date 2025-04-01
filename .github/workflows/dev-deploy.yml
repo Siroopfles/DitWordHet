@@ -2,7 +2,7 @@ name: Development Deployment
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows: ['CI Pipeline']
     types:
       - completed
     branches:
@@ -33,10 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
-        
+
       - name: Configure GHCR credentials
         env:
           GHCR_USERNAME: ${{ github.actor }}
@@ -52,7 +52,7 @@ jobs:
           echo "$KUBE_CONFIG_DATA" | base64 -d > kubeconfig.yaml
           chmod 600 kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
-          
+
           # Update secrets
           kubectl create secret docker-registry ghcr-pull-secret \
             --docker-server=ghcr.io \
@@ -74,12 +74,12 @@ jobs:
             --from-literal=DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }} \
             --from-literal=GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }} \
             --dry-run=client -o yaml | kubectl apply -f -
-          
+
           # Update image tags in manifests
           for app in api web bot; do
             kubectl set image deployment/$app $app=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$app:${{ needs.prepare.outputs.sha }} -n development
           done
-          
+
           # Wait for rollout and check health
           for app in api web bot; do
             kubectl rollout status deployment/$app -n development --timeout=300s
@@ -101,16 +101,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Run integration tests
         env:
           TEST_API_URL: https://dev-api.ditwordhet.nl
@@ -127,14 +127,14 @@ jobs:
           url: https://dev-api.ditwordhet.nl/health
           max-attempts: 5
           retry-delay: 10s
-          
+
       - name: Check Web health
         uses: jtalk/url-health-check-action@v3
         with:
           url: https://dev.ditwordhet.nl/health
           max-attempts: 5
           retry-delay: 10s
-          
+
       - name: Check Bot health
         uses: jtalk/url-health-check-action@v3
         with:
@@ -154,7 +154,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          title: "Development Deployment"
+          title: 'Development Deployment'
           description: |
             Environment: Development
             Commit: ${{ needs.prepare.outputs.sha }}

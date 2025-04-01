@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+dist/
+
+# Build output
+build/
+coverage/
+
+# Project documentation and logs
+project_journal/
+*.md
+
+# Misc
+.git/
+.DS_Store
