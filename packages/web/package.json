@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsc",
     "dev": "vite",
+    "build:vite": "vite build",
     "test": "jest"
   },
   "dependencies": {

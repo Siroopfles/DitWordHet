@@ -7,12 +7,12 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "strict": true
+    "strict": true,
+    "allowJs": true,
+    "declaration": true
   },
   "include": ["src/**/*"],
   "references": [{ "path": "../shared" }]
