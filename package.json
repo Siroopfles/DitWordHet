@@ -11,8 +11,8 @@
     "format": "prettier --write .",
     "build": "npm run build -w @ditwordhet/shared && npm run build -w @ditwordhet/bot",
     "type-check": "npm run build && tsc --noEmit",
-    "test": "jest",
-    "test:ci": "jest --ci --coverage"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:ci": "NODE_OPTIONS=--experimental-vm-modules jest --ci --coverage"
   },
   "type": "module",
   "devDependencies": {
