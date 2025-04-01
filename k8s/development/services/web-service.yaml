@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: dcm-development
+  labels:
+    app: dcm-web
+    environment: development
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: dcm-web
+    environment: development

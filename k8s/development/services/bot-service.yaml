@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bot-service
+  namespace: dcm-development
+  labels:
+    app: dcm-bot
+    environment: development
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
+      name: http
+  selector:
+    app: dcm-bot
+    environment: development

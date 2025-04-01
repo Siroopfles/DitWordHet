@@ -37,6 +37,14 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         
+      - name: Configure GHCR credentials
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          echo "Creating base64 encoded auth..."
+          echo -n "$GHCR_USERNAME:$GHCR_TOKEN" | base64 > auth.txt
+
       - name: Deploy to development
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DEV }}
@@ -45,14 +53,46 @@ jobs:
           chmod 600 kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
           
+          # Update secrets
+          kubectl create secret docker-registry ghcr-pull-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GHCR_TOKEN }} \
+            --namespace=development \
+            --dry-run=client -o yaml | kubectl apply -f -
+            
+          # Update application secrets
+          kubectl create secret generic dcm-secrets \
+            --namespace=development \
+            --from-literal=DB_HOST=${{ secrets.DB_HOST }} \
+            --from-literal=DB_USER=${{ secrets.DB_USER }} \
+            --from-literal=DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            --from-literal=REDIS_HOST=${{ secrets.REDIS_HOST }} \
+            --from-literal=REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
+            --from-literal=JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --from-literal=DISCORD_BOT_TOKEN=${{ secrets.DISCORD_BOT_TOKEN }} \
+            --from-literal=DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }} \
+            --from-literal=GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+          
           # Update image tags in manifests
           for app in api web bot; do
             kubectl set image deployment/$app $app=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$app:${{ needs.prepare.outputs.sha }} -n development
           done
           
-          # Wait for rollout
+          # Wait for rollout and check health
           for app in api web bot; do
             kubectl rollout status deployment/$app -n development --timeout=300s
+            
+            # Initial delay to allow health endpoints to come up
+            sleep 10
+            
+            # Check pod health
+            POD=$(kubectl get pod -l app=$app -n development -o jsonpath="{.items[0].metadata.name}")
+            if ! kubectl exec $POD -n development -- wget -q --spider http://localhost:8080/health; then
+              echo "Health check failed for $app"
+              exit 1
+            fi
           done
 
   integration-tests:

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  namespace: dcm-staging
+  labels:
+    app: dcm-web
+    environment: staging
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: dcm-web
+    environment: staging
