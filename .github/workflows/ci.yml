@@ -12,11 +12,23 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPO_OWNER: ${{ format(github.repository_owner, 'lower') }}
   REPO_NAME: ditwordhet
 
 jobs:
+  set-env:
+    name: Set Environment Variables
+    runs-on: ubuntu-latest
+    outputs:
+      repo_owner: ${{ steps.lowercase.outputs.repo_owner }}
+    steps:
+      - id: lowercase
+        run: |
+          echo "repo_owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+
+jobs:
   validate:
+    needs: set-env
     name: Validate Code
     runs-on: ubuntu-latest
     steps:
@@ -76,6 +88,7 @@ jobs:
           path: coverage/
 
   build:
+    needs: [test, set-env]
     name: Build Containers
     needs: test
     runs-on: ubuntu-latest
@@ -102,7 +115,7 @@ jobs:
           context: ./packages/${{ matrix.package }}
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
@@ -112,6 +125,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   scan:
+    needs: [build, set-env]
     name: Security Scan
     needs: build
     runs-on: ubuntu-latest
@@ -122,7 +136,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'
@@ -144,6 +158,7 @@ jobs:
           args: --severity-threshold=high
 
   publish:
+    needs: [scan, set-env]
     name: Publish Images
     needs: scan
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
@@ -169,5 +184,5 @@ jobs:
           context: ./packages/${{ matrix.package }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:latest
+            ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:latest
