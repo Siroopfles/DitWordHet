@@ -1,0 +1,121 @@
+name: Development Deployment
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  prepare:
+    name: Prepare Deployment
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.get-sha.outputs.sha }}
+    steps:
+      - id: get-sha
+        run: echo "sha=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to Development
+    needs: prepare
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        
+      - name: Deploy to development
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DEV }}
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 -d > kubeconfig.yaml
+          chmod 600 kubeconfig.yaml
+          export KUBECONFIG=kubeconfig.yaml
+          
+          # Update image tags in manifests
+          for app in api web bot; do
+            kubectl set image deployment/$app $app=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/$app:${{ needs.prepare.outputs.sha }} -n development
+          done
+          
+          # Wait for rollout
+          for app in api web bot; do
+            kubectl rollout status deployment/$app -n development --timeout=300s
+          done
+
+  integration-tests:
+    name: Run Integration Tests
+    needs: [prepare, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run integration tests
+        env:
+          TEST_API_URL: https://dev-api.ditwordhet.nl
+        run: npm run test:integration
+
+  health-check:
+    name: Service Health Check
+    needs: [prepare, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check API health
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://dev-api.ditwordhet.nl/health
+          max-attempts: 5
+          retry-delay: 10s
+          
+      - name: Check Web health
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://dev.ditwordhet.nl/health
+          max-attempts: 5
+          retry-delay: 10s
+          
+      - name: Check Bot health
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://dev-bot.ditwordhet.nl/health
+          max-attempts: 5
+          retry-delay: 10s
+
+  notify:
+    name: Send Notifications
+    needs: [health-check, integration-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify Discord
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: "Development Deployment"
+          description: |
+            Environment: Development
+            Commit: ${{ needs.prepare.outputs.sha }}
+            Status: ${{ job.status }}
