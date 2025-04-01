@@ -12,7 +12,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository }}
+  REPO_OWNER: ${{ format(github.repository_owner, 'lower') }}
+  REPO_NAME: ditwordhet
 
 jobs:
   validate:
@@ -101,7 +102,7 @@ jobs:
           context: ./packages/${{ matrix.package }}
           push: false
           load: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.package }}:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
@@ -121,7 +122,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.package }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'
@@ -168,5 +169,5 @@ jobs:
           context: ./packages/${{ matrix.package }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.package }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.package }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}-${{ matrix.package }}:latest
