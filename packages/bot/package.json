@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:deps && tsc",
+    "build:deps": "npm run build -w @ditwordhet/shared",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "jest"
