@@ -108,7 +108,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-${{ matrix.package }}-
 
-      - name: Build image
+      - name: Build and load image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -118,6 +118,9 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ needs.set-env.outputs.repo_owner }}/${{ env.REPO_NAME }}-${{ matrix.package }}:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: List images
+        run: docker images
 
       - name: Move cache
         run: |
@@ -132,6 +135,12 @@ jobs:
       matrix:
         package: [api, web, bot]
     steps:
+      - name: Wait for images
+        run: sleep 10
+
+      - name: List images
+        run: docker images
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
