@@ -1,0 +1,35 @@
+# Kibana configuratie
+
+# Server settings
+server.name: kibana
+server.host: "0.0.0.0"
+server.port: 5601
+
+# Elasticsearch connection
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.requestTimeout: 30000
+
+# Security settings (disabled for development)
+xpack.security.enabled: false
+
+# Monitoring settings
+monitoring.ui.container.elasticsearch.enabled: true
+
+# Default route settings
+server.defaultRoute: "/app/home"
+
+# Logging settings
+logging.root.level: info
+
+# Index patterns
+kibana.defaultAppId: "discover"
+
+# Saved objects settings
+savedObjects.maxImportPayloadBytes: 10485760
+
+# Browser settings
+cpu.cgroup.path.override: "/"
+node.options: []
+
+# Timezone
+dateFormat:tz: "Europe/Amsterdam"
